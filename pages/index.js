@@ -27,7 +27,7 @@ const MQTTPage = () => {
   const [inputMessage, setInputMessage] = useState("");
 
   const MQTT_TOPIC = 'esp32/pub';
-  const socket = io.connect('yugiot.tech:5000');
+  const socket = io.connect('https://yugiot.tech:5000');
 
   const sendToBackend = (value) => {
     socket.emit('sendToBackend', { topic: MQTT_TOPIC, message: value });
