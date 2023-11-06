@@ -26,15 +26,17 @@ const MQTTPage = () => {
   const [tableData, setTableData] = useState(null);
   const [inputMessage, setInputMessage] = useState("");
 
+  const MQTT_TOPICs = 'esp32/sub';
   const MQTT_TOPIC = 'esp32/pub';
+
   const socket = io.connect('https://yugiot.tech:5000');
 
   const sendToBackend = (value) => {
-    socket.emit('sendToBackend', { topic: MQTT_TOPIC, message: value });
+    socket.emit('sendToBackend', { topic: MQTT_TOPICs, message: value });
   };
 
   const sendToMQTT = (value) => {
-    socket.emit('sendToMQTT', { topic: MQTT_TOPIC, message: value });
+    socket.emit('sendToMQTT', { topic: MQTT_TOPICs, message: value });
   };
 
   useEffect(() => {
