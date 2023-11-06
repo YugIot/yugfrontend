@@ -95,8 +95,8 @@ const MQTTPage = () => {
       {tableData}
 
       <div>
-        <button onClick={() => sendToMQTT("1")}>Send 1 to MQTT</button>
-        <button onClick={() => sendToMQTT("0")}>Send 0 to MQTT</button>
+      <button onClick={() => sendToMQTT('{"message":"1"}')}>Send 1 to MQTT</button>
+        <button onClick={() => sendToMQTT('{"message":"0"}')}>Send 0 to MQTT</button>
       </div>
 
       <div>
