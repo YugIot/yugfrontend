@@ -30,7 +30,7 @@ const MQTTPage = () => {
   const [mqttTopic, setMqttTopic] = useState(""); // New state for MQTT topic
   const [topicName, setTopicName] = useState(""); // New state for topic name
 
-  const socket = io.connect('https://yuiot.tech:5000');
+  const socket = io.connect('https://yugiot.tech:5000');
 
   const sendToBackend = (value) => {
     socket.emit('sendToBackend', { topic: mqttTopic, message: value });
