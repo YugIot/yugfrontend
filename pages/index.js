@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import axios from 'axios'; // Ensure axios is installed
 
 const tableStyle = {
   borderCollapse: 'collapse',
@@ -25,36 +26,55 @@ const MQTTPage = () => {
   const [messages, setMessages] = useState([]);
   const [tableData, setTableData] = useState(null);
   const [inputMessage, setInputMessage] = useState("");
+  const [mqttMessage, setMqttMessage] = useState(""); // New state for MQTT message
+  const [mqttTopic, setMqttTopic] = useState(""); // New state for MQTT topic
+  const [topicName, setTopicName] = useState(""); // New state for topic name
 
-  const MQTT_TOPICs = 'esp32/sub';
-  const MQTT_TOPIC = 'esp32/pub';
-
-  const socket = io.connect('https://yugiot.tech:5000');
+  const socket = io.connect('https://yuiot.tech:5000');
 
   const sendToBackend = (value) => {
-    socket.emit('sendToBackend', { topic: MQTT_TOPICs, message: value });
+    socket.emit('sendToBackend', { topic: mqttTopic, message: value });
   };
 
   const sendToMQTT = (value) => {
-    socket.emit('sendToMQTT', { topic: MQTT_TOPICs, message: value });
+    socket.emit('sendToMQTT', { topic: mqttTopic, message: value });
+  };
+
+  const subscribeToTopic = async () => {
+    try {
+      await axios.post('https://yugiot.tech:5000/subscribe', { topic: topicName });
+      alert(`Subscribed to ${topicName}`);
+    } catch (error) {
+      console.error('Error subscribing to topic:', error);
+      alert('Error subscribing to topic');
+    }
+  };
+
+  const unsubscribeFromTopic = async () => {
+    try {
+      await axios.post('https://yugiot.tech:5000/unsubscribe', { topic: topicName });
+      alert(`Unsubscribed from ${topicName}`);
+    } catch (error) {
+      console.error('Error unsubscribing from topic:', error);
+      alert('Error unsubscribing from topic');
+    }
   };
 
   useEffect(() => {
-    socket.emit('subscribeData', { topic: MQTT_TOPIC });
+    socket.emit('subscribeData', { topic: mqttTopic });
 
     socket.on('newMessage', (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
 
       try {
         const jsonData = JSON.parse(message);
-
         if (jsonData && typeof jsonData === 'object') {
           const keys = Object.keys(jsonData);
           const values = Object.values(jsonData);
           const table = (
-            <table className="w-full table-fixed border-collapse" style={tableStyle}>
+            <table style={tableStyle}>
               <thead>
-                <tr className="bg-primary text-white">
+                <tr>
                   {keys.map((key, index) => (
                     <th key={index} style={thStyle}>
                       {key}
@@ -83,11 +103,16 @@ const MQTTPage = () => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [mqttTopic]);
 
-  const handleSend = () => {
+  const handleSendToBackend = () => {
     sendToBackend(inputMessage);
     setInputMessage("");
+  };
+
+  const handleSendToMQTT = () => {
+    sendToMQTT(mqttMessage);
+    setMqttMessage("");
   };
 
   return (
@@ -96,11 +121,24 @@ const MQTTPage = () => {
 
       {tableData}
 
+      {/* MQTT message sending section */}
       <div>
-      <button onClick={() => sendToMQTT('{"message":"1"}')}>Send 1 to MQTT</button>
-        <button onClick={() => sendToMQTT('{"message":"0"}')}>Send 0 to MQTT</button>
+        <input
+          type="text"
+          value={mqttTopic}
+          onChange={(e) => setMqttTopic(e.target.value)}
+          placeholder="Enter MQTT topic"
+        />
+        <input
+          type="text"
+          value={mqttMessage}
+          onChange={(e) => setMqttMessage(e.target.value)}
+          placeholder="Enter MQTT message"
+        />
+        <button onClick={handleSendToMQTT}>Send to MQTT</button>
       </div>
 
+      {/* Backend message sending section */}
       <div>
         <input
           type="text"
@@ -108,7 +146,19 @@ const MQTTPage = () => {
           onChange={(e) => setInputMessage(e.target.value)}
           placeholder="Enter a message"
         />
-        <button onClick={handleSend}>Send Message to Backend</button>
+        <button onClick={handleSendToBackend}>Send Message to Backend</button>
+      </div>
+
+      {/* Subscription section */}
+      <div>
+        <input
+          type="text"
+          value={topicName}
+          onChange={(e) => setTopicName(e.target.value)}
+          placeholder="Enter topic name"
+        />
+        <button onClick={subscribeToTopic}>Subscribe</button>
+        <button onClick={unsubscribeFromTopic}>Unsubscribe</button>
       </div>
     </div>
   );
